@@ -1,0 +1,6 @@
+torch>=2.4.0
+numpy>=2.0.0
+pytest>=8.0.0
+packaging>=24.0
+setuptools>=70.0.0
+ninja>=1.11.0
