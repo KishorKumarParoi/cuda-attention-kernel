@@ -14,3 +14,5 @@ __all__ = [
 
 
 # Commit 1: math(attention): derive online softmax running maximum and normalizer recurrences
+
+# Commit 2: feat(kernel): scaffold basic CUDA attention kernel with naive global memory access
