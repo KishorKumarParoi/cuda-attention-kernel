@@ -24,3 +24,5 @@ __all__ = [
 # Commit 5: perf(cuda): pad shared memory allocations [d + 4] to eliminate 32-way bank conflicts
 
 # Commit 6: feat(warp): implement __shfl_down_sync intra-warp sum and max reduction intrinsics
+
+# Commit 7: math(online_softmax): derive rescale factor alpha = exp(m_prev - m_new) for running accumulator
