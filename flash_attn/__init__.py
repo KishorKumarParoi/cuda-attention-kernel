@@ -32,3 +32,5 @@ __all__ = [
 # Commit 9: feat(causal): implement causal block skipping to prune upper-triangular computations
 
 # Commit 10: feat(cpu_ref): implement high-performance CPU reference kernel with identical tiling
+
+# Commit 11: test(forward): add unit tests verifying bitwise numerical equivalence against PyTorch SDPA
