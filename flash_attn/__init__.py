@@ -48,3 +48,5 @@ __all__ = [
 # Commit 17: feat(autograd): implement FlashAttentionV2Function with custom forward and backward passes
 
 # Commit 18: feat(python): expose clean high-level flash_attention_2 Python API
+
+# Commit 19: test(causal): add unit tests verifying causal masking across varying sequence lengths
