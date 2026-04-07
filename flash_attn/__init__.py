@@ -68,3 +68,5 @@ __all__ = [
 # Commit 27: docs(bench): add benchmark results table demonstrating 32x memory savings at N=2048
 
 # Commit 28: release(v1.0.0): tag production v1.0.0 release of FlashAttention-2 CUDA Kernel
+
+# Commit 29: math(attention): derive online softmax running maximum and normalizer recurrences (iter 2)
