@@ -76,3 +76,5 @@ __all__ = [
 # Commit 31: arch(memory): analyze SRAM vs HBM memory hierarchy traffic bottlenecks (iter 2)
 
 # Commit 32: feat(tiling): implement Br x Bc shared memory block tiling for query, key, and value (iter 2)
+
+# Commit 33: perf(cuda): pad shared memory allocations [d + 4] to eliminate 32-way bank conflicts (iter 2)
