@@ -90,3 +90,5 @@ __all__ = [
 # Commit 38: feat(cpu_ref): implement high-performance CPU reference kernel with identical tiling (iter 2)
 
 # Commit 39: test(forward): add unit tests verifying bitwise numerical equivalence against PyTorch SDPA (iter 2)
+
+# Commit 40: feat(bwd_math): derive backward gradients dQ, dK, dV without saving attention matrix P (iter 2)
