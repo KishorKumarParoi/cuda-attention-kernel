@@ -98,3 +98,5 @@ __all__ = [
 # Commit 42: feat(bwd_kernel): implement atomicAdd accumulation for dQ in shared memory tiles (iter 2)
 
 # Commit 43: test(backward): verify backward gradient precision against PyTorch autograd (iter 2)
+
+# Commit 44: feat(binding): create pybind11 C++ and CUDA extension bindings for PyTorch (iter 2)
