@@ -100,3 +100,5 @@ __all__ = [
 # Commit 43: test(backward): verify backward gradient precision against PyTorch autograd (iter 2)
 
 # Commit 44: feat(binding): create pybind11 C++ and CUDA extension bindings for PyTorch (iter 2)
+
+# Commit 45: feat(autograd): implement FlashAttentionV2Function with custom forward and backward passes (iter 2)
