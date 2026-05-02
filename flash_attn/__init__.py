@@ -112,3 +112,5 @@ __all__ = [
 # Commit 49: bench(latency): implement benchmark measuring latency across N in [256, 512, 1024, 2048] (iter 2)
 
 # Commit 50: bench(roofline): add arithmetic intensity calculation and Roofline model analysis (iter 2)
+
+# Commit 51: perf(memory): optimize tensor contiguous views to avoid unnecessary memory clones (iter 2)
