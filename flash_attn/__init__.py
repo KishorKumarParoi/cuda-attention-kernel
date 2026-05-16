@@ -138,3 +138,5 @@ __all__ = [
 # Commit 62: feat(warp): implement __shfl_down_sync intra-warp sum and max reduction intrinsics (iter 3)
 
 # Commit 63: math(online_softmax): derive rescale factor alpha = exp(m_prev - m_new) for running accumulator (iter 3)
+
+# Commit 64: feat(kernel): fuse scale factor into QK dot product to maximize register occupancy (iter 3)
