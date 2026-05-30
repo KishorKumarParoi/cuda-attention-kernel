@@ -162,3 +162,5 @@ __all__ = [
 # Commit 74: feat(python): expose clean high-level flash_attention_2 Python API (iter 3)
 
 # Commit 75: test(causal): add unit tests verifying causal masking across varying sequence lengths (iter 3)
+
+# Commit 76: test(memory): add automated test asserting O(N) linear memory footprint scaling (iter 3)
