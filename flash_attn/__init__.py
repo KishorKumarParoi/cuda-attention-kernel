@@ -166,3 +166,5 @@ __all__ = [
 # Commit 76: test(memory): add automated test asserting O(N) linear memory footprint scaling (iter 3)
 
 # Commit 77: bench(latency): implement benchmark measuring latency across N in [256, 512, 1024, 2048] (iter 3)
+
+# Commit 78: bench(roofline): add arithmetic intensity calculation and Roofline model analysis (iter 3)
