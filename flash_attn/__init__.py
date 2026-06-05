@@ -172,3 +172,5 @@ __all__ = [
 # Commit 79: perf(memory): optimize tensor contiguous views to avoid unnecessary memory clones (iter 3)
 
 # Commit 80: ci(docker): add multi-stage CUDA 12.4 Dockerfile with PyTorch and Ninja build harness (iter 3)
+
+# Commit 81: chore(setup): configure setup.py with CUDAExtension and fallback CppExtension (iter 3)
