@@ -186,3 +186,5 @@ __all__ = [
 # Commit 86: feat(kernel): scaffold basic CUDA attention kernel with naive global memory access (iter 4)
 
 # Commit 87: arch(memory): analyze SRAM vs HBM memory hierarchy traffic bottlenecks (iter 4)
+
+# Commit 88: feat(tiling): implement Br x Bc shared memory block tiling for query, key, and value (iter 4)
