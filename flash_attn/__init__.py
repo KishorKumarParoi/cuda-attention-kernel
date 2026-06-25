@@ -208,3 +208,5 @@ __all__ = [
 # Commit 97: feat(bwd_kernel): implement SRAM recomputation of attention weights in backward pass (iter 4)
 
 # Commit 98: feat(bwd_kernel): implement atomicAdd accumulation for dQ in shared memory tiles (iter 4)
+
+# Commit 99: test(backward): verify backward gradient precision against PyTorch autograd (iter 4)
