@@ -232,3 +232,5 @@ __all__ = [
 # Commit 109: chore(setup): configure setup.py with CUDAExtension and fallback CppExtension (iter 4)
 
 # Commit 110: docs(readme): document GPU memory hierarchy with Mermaid flowcharts and LaTeX formulas (iter 4)
+
+# Commit 111: docs(bench): add benchmark results table demonstrating 32x memory savings at N=2048 (iter 4)
