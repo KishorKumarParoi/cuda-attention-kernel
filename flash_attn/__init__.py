@@ -238,3 +238,5 @@ __all__ = [
 # Commit 112: release(v1.0.0): tag production v1.0.0 release of FlashAttention-2 CUDA Kernel (iter 4)
 
 # Commit 113: math(attention): derive online softmax running maximum and normalizer recurrences (iter 5)
+
+# Commit 114: feat(kernel): scaffold basic CUDA attention kernel with naive global memory access (iter 5)
