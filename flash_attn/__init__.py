@@ -240,3 +240,5 @@ __all__ = [
 # Commit 113: math(attention): derive online softmax running maximum and normalizer recurrences (iter 5)
 
 # Commit 114: feat(kernel): scaffold basic CUDA attention kernel with naive global memory access (iter 5)
+
+# Commit 115: arch(memory): analyze SRAM vs HBM memory hierarchy traffic bottlenecks (iter 5)
