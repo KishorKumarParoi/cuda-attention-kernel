@@ -246,3 +246,5 @@ __all__ = [
 # Commit 116: feat(tiling): implement Br x Bc shared memory block tiling for query, key, and value (iter 5)
 
 # Commit 117: perf(cuda): pad shared memory allocations [d + 4] to eliminate 32-way bank conflicts (iter 5)
+
+# Commit 118: feat(warp): implement __shfl_down_sync intra-warp sum and max reduction intrinsics (iter 5)
