@@ -262,3 +262,5 @@ __all__ = [
 # Commit 124: feat(bwd_math): derive backward gradients dQ, dK, dV without saving attention matrix P (iter 5)
 
 # Commit 125: feat(bwd_kernel): implement SRAM recomputation of attention weights in backward pass (iter 5)
+
+# Commit 126: feat(bwd_kernel): implement atomicAdd accumulation for dQ in shared memory tiles (iter 5)
