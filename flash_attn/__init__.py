@@ -282,3 +282,5 @@ __all__ = [
 # Commit 134: bench(roofline): add arithmetic intensity calculation and Roofline model analysis (iter 5)
 
 # Commit 135: perf(memory): optimize tensor contiguous views to avoid unnecessary memory clones (iter 5)
+
+# Commit 136: ci(docker): add multi-stage CUDA 12.4 Dockerfile with PyTorch and Ninja build harness (iter 5)
