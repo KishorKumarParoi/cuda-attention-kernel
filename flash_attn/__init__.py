@@ -286,3 +286,5 @@ __all__ = [
 # Commit 136: ci(docker): add multi-stage CUDA 12.4 Dockerfile with PyTorch and Ninja build harness (iter 5)
 
 # Commit 137: chore(setup): configure setup.py with CUDAExtension and fallback CppExtension (iter 5)
+
+# Commit 138: docs(readme): document GPU memory hierarchy with Mermaid flowcharts and LaTeX formulas (iter 5)
