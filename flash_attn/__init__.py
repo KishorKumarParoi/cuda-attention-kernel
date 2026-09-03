@@ -332,3 +332,5 @@ __all__ = [
 # Commit 159: test(causal): add unit tests verifying causal masking across varying sequence lengths (iter 6)
 
 # Commit 160: test(memory): add automated test asserting O(N) linear memory footprint scaling (iter 6)
+
+# Commit 161: bench(latency): implement benchmark measuring latency across N in [256, 512, 1024, 2048] (iter 6)
