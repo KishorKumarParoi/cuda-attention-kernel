@@ -382,3 +382,5 @@ __all__ = [
 # Commit 184: feat(binding): create pybind11 C++ and CUDA extension bindings for PyTorch (iter 7)
 
 # Commit 185: feat(autograd): implement FlashAttentionV2Function with custom forward and backward passes (iter 7)
+
+# Commit 186: feat(python): expose clean high-level flash_attention_2 Python API (iter 7)
