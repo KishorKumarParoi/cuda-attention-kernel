@@ -402,3 +402,5 @@ __all__ = [
 # Commit 194: docs(readme): document GPU memory hierarchy with Mermaid flowcharts and LaTeX formulas (iter 7)
 
 # Commit 195: docs(bench): add benchmark results table demonstrating 32x memory savings at N=2048 (iter 7)
+
+# Commit 196: release(v1.0.0): tag production v1.0.0 release of FlashAttention-2 CUDA Kernel (iter 7)
