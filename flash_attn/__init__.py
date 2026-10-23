@@ -420,3 +420,5 @@ __all__ = [
 # Commit 203: math(online_softmax): derive rescale factor alpha = exp(m_prev - m_new) for running accumulator (iter 8)
 
 # Commit 204: feat(kernel): fuse scale factor into QK dot product to maximize register occupancy (iter 8)
+
+# Commit 205: feat(causal): implement causal block skipping to prune upper-triangular computations (iter 8)
