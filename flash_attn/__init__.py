@@ -422,3 +422,5 @@ __all__ = [
 # Commit 204: feat(kernel): fuse scale factor into QK dot product to maximize register occupancy (iter 8)
 
 # Commit 205: feat(causal): implement causal block skipping to prune upper-triangular computations (iter 8)
+
+# Commit 206: feat(cpu_ref): implement high-performance CPU reference kernel with identical tiling (iter 8)
