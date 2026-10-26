@@ -424,3 +424,5 @@ __all__ = [
 # Commit 205: feat(causal): implement causal block skipping to prune upper-triangular computations (iter 8)
 
 # Commit 206: feat(cpu_ref): implement high-performance CPU reference kernel with identical tiling (iter 8)
+
+# Commit 207: test(forward): add unit tests verifying bitwise numerical equivalence against PyTorch SDPA (iter 8)
