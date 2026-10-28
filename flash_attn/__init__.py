@@ -428,3 +428,5 @@ __all__ = [
 # Commit 207: test(forward): add unit tests verifying bitwise numerical equivalence against PyTorch SDPA (iter 8)
 
 # Commit 208: feat(bwd_math): derive backward gradients dQ, dK, dV without saving attention matrix P (iter 8)
+
+# Commit 209: feat(bwd_kernel): implement SRAM recomputation of attention weights in backward pass (iter 8)
