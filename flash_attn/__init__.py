@@ -440,3 +440,5 @@ __all__ = [
 # Commit 213: feat(autograd): implement FlashAttentionV2Function with custom forward and backward passes (iter 8)
 
 # Commit 214: feat(python): expose clean high-level flash_attention_2 Python API (iter 8)
+
+# Commit 215: test(causal): add unit tests verifying causal masking across varying sequence lengths (iter 8)
