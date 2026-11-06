@@ -20,3 +20,4 @@ bench:
 
 clean:
 	rm -rf build/ dist/ *.egg-info .pytest_cache/ __pycache__ flash_attn/__pycache__
+

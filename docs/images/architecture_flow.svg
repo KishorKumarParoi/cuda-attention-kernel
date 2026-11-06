@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" width="100%" height="100%" style="background:#090d16; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <linearGradient id="gpuGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.05"/>
+    </linearGradient>
+    <linearGradient id="sramGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="warpGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#6d28d9" stop-opacity="0.1"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Title Badge -->
+  <rect x="40" y="25" width="920" height="55" rx="8" fill="#131b2e" stroke="#1e293b" stroke-width="1.5"/>
+  <text x="60" y="58" fill="#38bdf8" font-size="18" font-weight="700">⚡ FlashAttention-2 / FlashAttention-3 GPU Memory Tiling Architecture</text>
+  <text x="680" y="58" fill="#94a3b8" font-size="13">O(N) Linear Footprint • Zero HBM NxN Matrix</text>
+
+  <!-- High-Bandwidth Memory (HBM) Box -->
+  <rect x="40" y="105" width="260" height="460" rx="10" fill="url(#gpuGrad)" stroke="#10b981" stroke-width="1.5"/>
+  <text x="60" y="135" fill="#34d399" font-size="15" font-weight="700">High-Bandwidth Memory (HBM)</text>
+  <text x="60" y="155" fill="#6ee7b7" font-size="12">~1.5 - 3.35 TB/s • 400-800 cycles</text>
+
+  <!-- HBM Tensors -->
+  <g transform="translate(60, 180)">
+    <rect width="220" height="70" rx="6" fill="#0f291e" stroke="#059669" stroke-width="1"/>
+    <text x="15" y="30" fill="#a7f3d0" font-size="13" font-weight="600">Query Matrix Q</text>
+    <text x="15" y="50" fill="#6ee7b7" font-size="11">[Batch, Heads, Seq_N, Head_d]</text>
+  </g>
+  <g transform="translate(60, 265)">
+    <rect width="220" height="70" rx="6" fill="#0f291e" stroke="#059669" stroke-width="1"/>
+    <text x="15" y="30" fill="#a7f3d0" font-size="13" font-weight="600">Key Matrix K</text>
+    <text x="15" y="50" fill="#6ee7b7" font-size="11">[Batch, Heads, Seq_N, Head_d]</text>
+  </g>
+  <g transform="translate(60, 350)">
+    <rect width="220" height="70" rx="6" fill="#0f291e" stroke="#059669" stroke-width="1"/>
+    <text x="15" y="30" fill="#a7f3d0" font-size="13" font-weight="600">Value Matrix V</text>
+    <text x="15" y="50" fill="#6ee7b7" font-size="11">[Batch, Heads, Seq_N, Head_d]</text>
+  </g>
+  <g transform="translate(60, 435)">
+    <rect width="220" height="70" rx="6" fill="#0f291e" stroke="#10b981" stroke-width="1.5" stroke-dasharray="3,3"/>
+    <text x="15" y="30" fill="#6ee7b7" font-size="13" font-weight="700">Accumulated Output O</text>
+    <text x="15" y="50" fill="#a7f3d0" font-size="11">[Batch, Heads, Seq_N, Head_d]</text>
+  </g>
+
+  <!-- Flow Arrows 1 -->
+  <path d="M 300 215 L 370 215" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)" stroke-dasharray="4,4"/>
+  <path d="M 300 300 L 370 300" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)" stroke-dasharray="4,4"/>
+  <path d="M 300 385 L 370 385" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow)" stroke-dasharray="4,4"/>
+  <path d="M 370 470 L 300 470" stroke="#10b981" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- Shared Memory / SRAM Box -->
+  <rect x="370" y="105" width="270" height="460" rx="10" fill="url(#sramGrad)" stroke="#3b82f6" stroke-width="1.5"/>
+  <text x="390" y="135" fill="#60a5fa" font-size="15" font-weight="700">SM On-Chip SRAM (Shared Memory)</text>
+  <text x="390" y="155" fill="#93c5fd" font-size="12">~19 - 33 TB/s • 20-30 cycles (Tiled Br x Bc)</text>
+
+  <!-- SRAM Tiles -->
+  <g transform="translate(390, 180)">
+    <rect width="230" height="65" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+    <text x="15" y="28" fill="#bfdbfe" font-size="13" font-weight="600">Tile s_Q [Br, d + 4]</text>
+    <text x="15" y="48" fill="#94a3b8" font-size="11">Padded Stride (0 Bank Conflicts)</text>
+  </g>
+  <g transform="translate(390, 260)">
+    <rect width="230" height="65" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+    <text x="15" y="28" fill="#bfdbfe" font-size="13" font-weight="600">Tile s_K [Bc, d + 4]</text>
+    <text x="15" y="48" fill="#94a3b8" font-size="11">Loaded via cp.async / TMA Engine</text>
+  </g>
+  <g transform="translate(390, 340)">
+    <rect width="230" height="65" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+    <text x="15" y="28" fill="#bfdbfe" font-size="13" font-weight="600">Tile s_V [Bc, d + 4]</text>
+    <text x="15" y="48" fill="#94a3b8" font-size="11">Double-Buffered Async Stream</text>
+  </g>
+  <g transform="translate(390, 420)">
+    <rect width="230" height="85" rx="6" fill="#1e293b" stroke="#60a5fa" stroke-width="1"/>
+    <text x="15" y="26" fill="#93c5fd" font-size="12" font-weight="700">Online Softmax Scaling</text>
+    <text x="15" y="46" fill="#cbd5e1" font-size="11">m_new = max(m_old, rowmax(S))</text>
+    <text x="15" y="64" fill="#cbd5e1" font-size="11">l_new = l_old · e^(m-m_new) + Σ e^(S-m_new)</text>
+  </g>
+
+  <!-- Flow Arrows 2 -->
+  <path d="M 640 215 L 700 215" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="4,4"/>
+  <path d="M 640 370 L 700 370" stroke="#a855f7" stroke-width="2.5" stroke-dasharray="4,4"/>
+  <path d="M 700 460 L 640 460" stroke="#3b82f6" stroke-width="2.5"/>
+
+  <!-- Warp Registers & Tensor Cores -->
+  <rect x="700" y="105" width="260" height="460" rx="10" fill="url(#warpGrad)" stroke="#8b5cf6" stroke-width="1.5"/>
+  <text x="720" y="135" fill="#c084fc" font-size="15" font-weight="700">Warp Registers &amp; Tensor Cores</text>
+  <text x="720" y="155" fill="#d8b4fe" font-size="12">~330 TB/s • 0 cycles • Tensor MMA</text>
+
+  <g transform="translate(720, 180)">
+    <rect width="220" height="75" rx="6" fill="#2e1065" stroke="#a855f7" stroke-width="1"/>
+    <text x="15" y="28" fill="#e9d5ff" font-size="12" font-weight="700">Tile GEMM-1 (S = Q · K^T)</text>
+    <text x="15" y="48" fill="#c084fc" font-size="11">mma.sync / wgmma.mma_async</text>
+    <text x="15" y="64" fill="#a855f7" font-size="10">Registers: 16x16 Tile Matrix</text>
+  </g>
+
+  <g transform="translate(720, 270)">
+    <rect width="220" height="85" rx="6" fill="#2e1065" stroke="#a855f7" stroke-width="1"/>
+    <text x="15" y="26" fill="#e9d5ff" font-size="12" font-weight="700">Intra-Warp Shuffle Reductions</text>
+    <text x="15" y="46" fill="#c084fc" font-size="11">__shfl_down_sync(0xffffffff)</text>
+    <text x="15" y="64" fill="#cbd5e1" font-size="11">Warp-level Max &amp; Sum in 5 cycles</text>
+  </g>
+
+  <g transform="translate(720, 370)">
+    <rect width="220" height="80" rx="6" fill="#2e1065" stroke="#a855f7" stroke-width="1"/>
+    <text x="15" y="26" fill="#e9d5ff" font-size="12" font-weight="700">Tile GEMM-2 (O = P · V)</text>
+    <text x="15" y="46" fill="#c084fc" font-size="11">Accumulator Rescale &amp; Multiply</text>
+    <text x="15" y="64" fill="#a855f7" font-size="10">O_acc = O_acc · α + P · V</text>
+  </g>
+
+  <g transform="translate(720, 465)">
+    <rect width="220" height="50" rx="6" fill="#1e1b4b" stroke="#a855f7" stroke-width="1"/>
+    <text x="15" y="24" fill="#e9d5ff" font-size="12" font-weight="700">Final Normalization</text>
+    <text x="15" y="40" fill="#c084fc" font-size="11">O_final = O_acc / l_final</text>
+  </g>
+</svg>

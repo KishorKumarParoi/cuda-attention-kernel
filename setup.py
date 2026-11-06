@@ -48,3 +48,4 @@ setup(
     ext_modules=ext_modules,
     cmdclass={"build_ext": BuildExtension},
 )
+

@@ -27,3 +27,4 @@ COPY . /workspace
 RUN pip install -e . --no-build-isolation
 
 CMD ["pytest", "tests/", "-v"]
+
