@@ -164,3 +164,97 @@ This decouples memory latency from computation pipelines, preventing pipeline st
   1. Add `__launch_bounds__(MAX_THREADS_PER_BLOCK, MIN_BLOCKS_PER_SM)` to instruct the compiler on register budgeting.
   2. Reduce tile sizes ($B_r, B_c$) to shrink register accumulator arrays.
   3. Keep temporary variables in shared memory rather than local arrays with runtime indexes.
+
+---
+
+### Q10: Why does standard FlashAttention suffer from low GPU occupancy during LLM autoregressive token generation ($S_q = 1$), and how does Flash-Decoding solve this?
+**Answer:**
+- **The Problem:** In autoregressive decoding, Query length is 1 ($S_q = 1$), while Key/Value sequence length is large (e.g. 16,384 tokens). Standard FlashAttention tiles queries along $B_r$. With $S_q = 1$, there is only 1 query tile per head. For batch size 1 with 32 attention heads on an NVIDIA A100 (108 SMs), the grid launches only 32 threadblocks:
+  $$\text{SM Occupancy} = \frac{32}{108} \approx 29.6\%$$
+  Over 70% of the GPU's hardware SMs are completely unassigned and idle.
+- **The Solution (Flash-Decoding / Split-KV):**
+  1. Decomposes the long $KV$ sequence into $K$ parallel splits (e.g., $K=32$ or $64$).
+  2. Launches $32 \times K = 1024$ threadblocks, completely saturating all SMs.
+  3. Each split computes partial online softmax $(\tilde{\mathbf{O}}_k, m_k, l_k)$.
+  4. A secondary reduction kernel merges the $K$ accumulators via global logsumexp $m_{\text{global}} = \max_k m_k$, rescaling with $\exp(m_k - m_{\text{global}})$.
+  5. Latency drops by up to **8x** on long-context generation workloads.
+
+---
+
+### Q11: Derive the mathematical reduction formula for combining $K$ partial accumulators in Flash-Decoding.
+**Answer:**
+Given $K$ splits, where each split $k \in \{0, \dots, K-1\}$ produced:
+$$m_k = \max_{j \in \text{split } k} S_{ij}, \quad l_k = \sum_{j \in \text{split } k} \exp(S_{ij} - m_k), \quad \tilde{\mathbf{O}}_k = \sum_{j \in \text{split } k} \exp(S_{ij} - m_k) \mathbf{V}_j$$
+To combine them without numerical overflow:
+1. Find the global row maximum:
+   $$m_{\text{global}} = \max_{k=0}^{K-1} m_k$$
+2. Compute the rescale factor for each split:
+   $$w_k = \exp\left(m_k - m_{\text{global}}\right)$$
+3. Compute the global partition function:
+   $$l_{\text{global}} = \sum_{k=0}^{K-1} l_k \cdot w_k$$
+4. Merge the output vectors:
+   $$\mathbf{O}_{\text{final}} = \frac{1}{l_{\text{global}}} \sum_{k=0}^{K-1} \tilde{\mathbf{O}}_k \cdot w_k$$
+**Proof of Correctness:**
+$$\tilde{\mathbf{O}}_k \cdot w_k = \left(\sum_{j \in k} \exp(S_{ij} - m_k) \mathbf{V}_j\right) \exp(m_k - m_{\text{global}}) = \sum_{j \in k} \exp(S_{ij} - m_{\text{global}}) \mathbf{V}_j$$
+$$\sum_{k=0}^{K-1} \tilde{\mathbf{O}}_k \cdot w_k = \sum_{j=1}^{N} \exp(S_{ij} - m_{\text{global}}) \mathbf{V}_j$$
+Dividing by $l_{\text{global}} = \sum_{j=1}^N \exp(S_{ij} - m_{\text{global}})$ yields exact mathematical softmax attention.
+
+---
+
+### Q12: How does PagedAttention eliminate memory fragmentation, and how does the CUDA kernel resolve non-contiguous memory access?
+**Answer:**
+- **The Fragmentation Problem:** Naive serving engines pre-allocate contiguous HBM for the maximum context window (e.g. 4096 tokens). Because request lengths vary unpredictably, 60% to 80% of GPU memory is trapped in unwritten buffers or scattered fragmented allocations.
+- **Paged KV Architecture:**
+  - GPU memory is partitioned into physical pages of fixed size $B_{\text{page}}$ (e.g., 16 tokens).
+  - A block table maintains the mapping: $\text{BlockTable}[b, \text{logical\_block\_idx}] \to \text{phys\_block\_id}$.
+- **CUDA Kernel Indexing:**
+  In the inner loop of the attention kernel, instead of reading $K$ and $V$ with contiguous strides $t \cdot d$, the thread computes:
+  ```cuda
+  int phys_block = block_tables[batch_id * max_blocks + logical_block_idx];
+  int k_offset = (((phys_block * 2 + 0) * H + head_id) * B_page + token_offset) * d + dim;
+  ```
+  This enables dynamic token allocation on demand, slashing memory waste to **< 4%** and tripling concurrent batch sizes.
+
+---
+
+### Q13: What is the arithmetic complexity and tile-pruning condition for Sliding Window Attention?
+**Answer:**
+- **Standard Attention Complexity:** Computes all pairs $(i, j) \in [1, N]^2 \implies O(N^2 d)$ FLOPs.
+- **Sliding Window Attention (Window size $W$):** Token $i$ only attends to tokens $j \in [\max(0, i - W + 1), i] \implies O(N \cdot W \cdot d)$ FLOPs.
+- **Tile-Pruning Condition in CUDA:**
+  For Query tile $[q_{\text{start}}, q_{\text{end}})$ and Key tile $[k_{\text{start}}, k_{\text{end}})$:
+  1. *Causal condition:* If $k_{\text{start}} > q_{\text{end}} - 1$, skip the tile (all keys in future).
+  2. *Window condition:* If $k_{\text{end}} - 1 < q_{\text{start}} - W$, skip the tile (all keys outside receptive field).
+  Skipping tiles avoids both global memory loads and Tensor Core MMA operations, reducing runtime proportionally to $\frac{W}{N}$.
+
+---
+
+### Q14: How does Fused ALiBi (Attention with Linear Biases) eliminate HBM memory traffic?
+**Answer:**
+Traditional position embeddings (Learned Positional Embeddings or RoPE) require computing or caching embedding tables in HBM or executing complex trigonometric operations.
+ALiBi replaces this with a static linear distance penalty:
+$$S_{ij} = \frac{\mathbf{Q}_i \mathbf{K}_j^T}{\sqrt{d}} - m_h \cdot |i - j| \quad \text{where } m_h = 2^{-\frac{8 \cdot h}{H}}$$
+- In the CUDA kernel, this bias is computed entirely in **registers** on-the-fly:
+  ```cuda
+  float alibi_bias = -slope * fabsf((float)(q_idx - k_idx));
+  score += alibi_bias;
+  ```
+- No memory roundtrips to global HBM.
+- Zero cache pollution.
+- Strong length extrapolation capability beyond the training sequence length.
+
+---
+
+### Q15: Compare FP8 E4M3 vs FP8 E5M2 for Deep Learning Attention Kernels.
+**Answer:**
+| Specification | FP8 E4M3 (`float8_e4m3fn`) | FP8 E5M2 (`float8_e5m2`) |
+| :--- | :--- | :--- |
+| **Bits (Sign, Exp, Mantissa)** | 1 sign, 4 exp, 3 mantissa | 1 sign, 5 exp, 2 mantissa |
+| **Max Representable Value** | $\pm 448$ | $\pm 57,344$ |
+| **Min Non-Zero Normal** | $2^{-6} \approx 0.0156$ | $2^{-14} \approx 6.1 \times 10^{-5}$ |
+| **Primary Use Case** | **Forward Pass** ($Q, K, V$ Activations & Weights) | **Backward Pass** (Gradients & Optimizer States) |
+| **Why E4M3 for Forward?** | 3 bits of mantissa provide higher precision for small activation deviations. | |
+| **Why E5M2 for Backward?** | 5 bits of exponent provide dynamic range to accommodate large gradient variances without underflowing. | |
+In the forward attention kernel, $Q$ and $K$ are cast to E4M3, and their GEMM is accumulated into **FP32 registers** to prevent precision collapse during the online softmax reduction.
+
+

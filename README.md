@@ -1,17 +1,22 @@
 # ⚡ FlashAttention-2 & FlashAttention-3 Custom CUDA Attention Kernel
 
-[![Build & Verification Status](https://img.shields.io/badge/Verification-19%2F19%20Passed-10b981?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
+[![Build & Verification Status](https://img.shields.io/badge/Verification-39%2F39%20Passed-10b981?style=for-the-badge&logo=pytest&logoColor=white)](tests/)
 [![Hardware Target](https://img.shields.io/badge/Hardware-NVIDIA%20Ampere%20%7C%20Hopper-76b900?style=for-the-badge&logo=nvidia&logoColor=white)](csrc/)
 [![Architecture Blueprint](https://img.shields.io/badge/Architecture-Tiled%20Online%20Softmax-3b82f6?style=for-the-badge)](docs/ARCHITECTURE.md)
 [![Interview Master Guide](https://img.shields.io/badge/Interview%20Mastery-25%2B%20Staff%20Questions-8b5cf6?style=for-the-badge)](docs/INTERVIEW_CHEATSHEET.md)
 
-> A bare-metal, high-performance CUDA Attention Kernel engineered from first principles based on **FlashAttention-2** (Tri Dao, 2023) and **FlashAttention-3** (Hopper WGMMA & TMA). Eliminates the $O(N^2)$ High-Bandwidth Memory (HBM) traffic bottleneck by computing scaled dot-product attention in fast on-chip SRAM via **Tiled Online Softmax**.
+> A bare-metal, high-performance CUDA Attention Kernel engineered from first principles based on **FlashAttention-2** (Tri Dao, 2023), **FlashAttention-3** (Hopper WGMMA & TMA), **Flash-Decoding** (Split-KV for autoregressive generation), and **PagedAttention** (vLLM-style virtual paging). Eliminates the $O(N^2)$ High-Bandwidth Memory (HBM) traffic bottleneck by computing scaled dot-product attention in fast on-chip SRAM via **Tiled Online Softmax**.
 
 ```
 Author: Kishor Kumar Paroi <1703053@student.ruet.ac.bd>
 Production Release: v2.0.0 (Staff/Principal Engineer Edition)
 Hardware Target: NVIDIA Ampere (A100) & Hopper (H100/H200)
-Memory Complexity: O(N) linear memory footprint (Zero N x N matrix materialization)
+Supported Attention Engines:
+  - FlashAttention-2 Tiled Online Softmax (Forward & Backward in O(N) SRAM)
+  - Flash-Decoding Split-KV (Autoregressive Generation with 100% SM occupancy)
+  - PagedAttention (Non-contiguous Block Tables with <4% memory waste)
+  - Sliding Window Attention & Fused ALiBi (Tile-pruned local attention)
+  - FP8 Scaled Attention (Hopper E4M3/E5M2 Tensor Core simulation)
 ```
 
 ---

@@ -1,15 +1,25 @@
 """
-CUDA Attention Kernel — High-Performance FlashAttention-2 Implementation.
+CUDA Attention Kernel — High-Performance FlashAttention-2 & Flash-Decoding Engine.
 """
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __author__ = "Kishor Kumar Paroi <1703053@student.ruet.ac.bd>"
 
 from flash_attn.core import flash_attention_2, FlashAttentionV2Function
+from flash_attn.flash_decoding import flash_decoding
+from flash_attn.paged import PagedKVCacheManager, paged_flash_attention
+from flash_attn.sliding_window import sliding_window_attention
+from flash_attn.fp8_attention import fp8_scaled_attention, quantize_to_fp8_simulated
 
 __all__ = [
     "flash_attention_2",
     "FlashAttentionV2Function",
+    "flash_decoding",
+    "PagedKVCacheManager",
+    "paged_flash_attention",
+    "sliding_window_attention",
+    "fp8_scaled_attention",
+    "quantize_to_fp8_simulated",
 ]
 
 

@@ -139,3 +139,79 @@ Memory required for backward pass: **$O(N)$ linear memory**.
    - Executes matrix multiplications directly from shared memory into registers without register intermediary copies.
 3. **Hardware FP8 / BF16 Precision:**
    - Supports FP8 (E4M3 and E5M2) with dynamic block scaling factors, doubling arithmetic throughput to **1,978 TFLOPs** on H100 SXM5.
+
+---
+
+## ⚡ 7. Flash-Decoding & Split-KV Autoregressive Attention
+
+### 7.1 The Generation Phase Bottleneck ($S_q = 1$)
+In modern autoregressive LLM decoding, Query length is 1 ($S_q = 1$) while the Key/Value cache is long ($S_{kv} \in [2\text{K}, 128\text{K}]$).
+In standard FlashAttention, parallelization is over $(B, H, \lceil S_q / B_r \rceil)$.
+When $S_q = 1$, there is only **1 query tile per head**. For batch size 1 with 32 attention heads on an NVIDIA A100 (108 SMs) or H100 (132 SMs):
+$$\text{SM Occupancy} = \frac{32}{108} \approx 29.6\%$$
+Over 70% of the GPU compute capacity remains completely idle!
+
+### 7.2 The Split-KV Architecture
+Flash-Decoding decomposes the KV dimension into $K$ independent splits:
+1. **Phase 1 (Split-KV Kernel):** The sequence length $N$ is partitioned into $K$ chunks of size $S_{\text{split}} = \lceil N / K \rceil$.
+   Each threadblock processes one split $k \in \{0, \dots, K-1\}$ and computes local statistics in SRAM:
+   $$m_k = \max_{j \in \text{split } k} (S_{ij}), \quad l_k = \sum_{j \in \text{split } k} \exp(S_{ij} - m_k)$$
+   $$\tilde{\mathbf{O}}_k = \sum_{j \in \text{split } k} \exp(S_{ij} - m_k) \mathbf{V}_j$$
+   Grid dimensions: $\left(K, H, B\right)$. This increases active threadblocks from $32$ to $32 \times K$, restoring **100% SM occupancy**.
+
+2. **Phase 2 (Logsumexp Reduction Kernel):** A secondary reduction kernel merges the $K$ partial accumulators:
+   $$m_{\text{global}} = \max_{k=0}^{K-1} m_k$$
+   $$w_k = \exp\left(m_k - m_{\text{global}}\right)$$
+   $$l_{\text{global}} = \sum_{k=0}^{K-1} l_k \cdot w_k$$
+   $$\mathbf{O}_{\text{final}} = \frac{1}{l_{\text{global}}} \sum_{k=0}^{K-1} \tilde{\mathbf{O}}_k \cdot w_k$$
+   This two-stage decomposition yields up to **8x lower latency** during LLM token generation.
+
+---
+
+## 💾 8. PagedAttention & Virtual Block Table KV Cache
+
+### 8.1 The Memory Fragmentation Challenge
+In traditional serving systems, contiguous memory is pre-allocated for the maximum sequence length (e.g., 4096 tokens).
+This incurs:
+- **Internal fragmentation:** Unused reserved memory in active requests.
+- **External fragmentation:** Memory unusable due to scattered variable allocations.
+Empirical audits reveal that **60% to 80%** of GPU memory is wasted.
+
+### 8.2 Paged Memory Architecture
+PagedAttention adapts OS virtual memory paging:
+- Physical KV storage is divided into non-contiguous blocks of size $B_{\text{page}}$ (e.g., 16 or 32 tokens).
+- Logical sequence tokens are mapped through an indirection table:
+  $$\text{BlockTable}: (\text{seq\_id}, \text{logical\_block\_idx}) \to \text{physical\_block\_id}$$
+- The CUDA kernel resolves memory indices directly in shared memory registers:
+  $$\text{KV\_Offset} = \left(\text{BlockTable}[b, \lfloor t / B_{\text{page}} \rfloor] \times 2 + \text{is\_V}\right) \times H \times B_{\text{page}} \times d + h \times B_{\text{page}} \times d + (t \bmod B_{\text{page}}) \times d$$
+- Memory waste drops to **< 4%**, tripling the concurrent serving batch size.
+
+---
+
+## 🪟 9. Sliding Window Attention & Fused ALiBi
+
+### 9.1 Sliding Window Attention (Local Attention)
+Restricts attention to a local context window $W$: token $i$ only attends to tokens in $[\max(0, i - W + 1), i]$.
+- **Tile-Level Pruning:**
+  - If $k_{\text{end}} - 1 < q_{\text{start}} - W$, the entire tile lies outside the receptive field and is skipped.
+  - Slashes compute from $O(N^2)$ to $O(N \cdot W)$, enabling 1M+ token context lengths.
+
+### 9.2 Fused ALiBi (Attention with Linear Biases)
+Instead of adding an external position embedding matrix in HBM, ALiBi injects a static slope penalty directly into the online softmax accumulator in registers:
+$$S_{ij} = \frac{\mathbf{Q}_i \mathbf{K}_j^T}{\sqrt{d}} - m_h \cdot |i - j| \quad \text{where } m_h = 2^{-\frac{8 \cdot h}{H}}$$
+Zero additional memory transfers, zero cache misses, and perfect extrapolation beyond training lengths.
+
+---
+
+## 🔬 10. FP8 Quantized Scaled Attention (Hopper / Blackwell)
+
+### 10.1 E4M3 vs E5M2 Representation
+- **FP8 E4M3:** 1 sign bit, 4 exponent bits, 3 mantissa bits (range $[-448, 448]$). Maximizes precision for activations and weights in forward passes.
+- **FP8 E5M2:** 1 sign bit, 5 exponent bits, 2 mantissa bits (range $[-57344, 57344]$). Maximizes dynamic range for gradients in backward passes.
+
+### 10.2 Scaled Matrix Multiplication in Shared Memory
+Dynamic per-tensor scaling factors prevent numerical underflow:
+$$\mathbf{S}_{ij} = \left(\mathbf{Q}_{\text{fp8}} \mathbf{K}_{\text{fp8}}^T\right) \cdot \left(\text{scale}_q \cdot \text{scale}_k \cdot \text{scale}_{\text{softmax}}\right)$$
+Products are accumulated into FP32 registers, providing **2x Tensor Core FLOP/s** throughput while maintaining high SNR (>30 dB).
+
+
