@@ -145,3 +145,4 @@ def sliding_window_attention(
         O[:, :, q_start:q_end, :] = acc_O * inv_l
 
     return O
+

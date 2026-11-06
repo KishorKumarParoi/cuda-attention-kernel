@@ -88,3 +88,4 @@ __global__ void paged_attention_kernel(
         O[out_idx] = (l_i > 0.0f) ? (acc_O[tid] / l_i) : 0.0f;
     }
 }
+

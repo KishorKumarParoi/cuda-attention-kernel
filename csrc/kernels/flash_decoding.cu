@@ -187,3 +187,4 @@ __global__ void flash_decoding_combine_kernel(
     const int final_offset = ((batch_id * H + head_id) * 1) * d + dim_idx;
     O[final_offset] = (l_global > 0.0f) ? (sum_O / l_global) : 0.0f;
 }
+

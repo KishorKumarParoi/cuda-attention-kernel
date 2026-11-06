@@ -241,3 +241,4 @@ def test_fp8_scaled_attention():
     assert not torch.isnan(out).any()
     assert metrics["snr_db"] > 20.0, f"SNR too low: {metrics['snr_db']} dB"
     assert metrics["max_abs_error"] < 0.2
+

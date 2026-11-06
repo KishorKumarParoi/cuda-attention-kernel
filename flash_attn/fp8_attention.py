@@ -167,3 +167,4 @@ def fp8_scaled_attention(
     }
 
     return O, metrics
+
